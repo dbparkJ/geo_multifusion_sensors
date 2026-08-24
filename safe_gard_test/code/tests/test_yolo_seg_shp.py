@@ -9,6 +9,7 @@ import csv
 
 import cv2
 import numpy as np
+import pytest
 from pyproj import Transformer
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -24,6 +25,7 @@ from geonova_depthai.yolo_seg_shp import (  # noqa: E402
     mask_depth_observation,
     median_depth_mm,
     parse_args as parse_yolo_args,
+    run_dataset,
 )
 from geonova_depthai.fence_linearization import (  # noqa: E402
     CRS_WGS84,
@@ -179,6 +181,29 @@ def test_depth_range_gate_uses_confidence_qualified_measurements() -> None:
     assert observation.depth_mm == 4_000
     assert observation.measured_count == 100
     assert observation.measured_median_mm == 4_000
+
+
+@pytest.mark.parametrize(
+    ("arguments", "message"),
+    [
+        ({"max_depth_mm": 0}, "max_depth_mm must be positive"),
+        ({"fragment_min_samples": 0}, "fragment_min_samples must be positive"),
+        ({"fragment_erosion_px": -1}, "fragment_erosion_px must be nonnegative"),
+        ({"depth_radius": -1}, "depth_radius must be nonnegative"),
+    ],
+)
+def test_run_dataset_rejects_invalid_depth_settings_before_creating_output(
+    tmp_path: Path,
+    arguments: dict,
+    message: str,
+) -> None:
+    dataset = tmp_path / "missing-dataset"
+    output = tmp_path / "output"
+
+    with pytest.raises(ValueError, match=message):
+        run_dataset(dataset, tmp_path / "missing-model.pt", output, **arguments)
+
+    assert not output.exists()
 
 
 def _write_rows(path: Path, rows: list[dict]) -> None:

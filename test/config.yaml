@@ -17,7 +17,7 @@ output:
 
 extract:
   # Keep the first run light. Set save_all: true to export every matched pair.
-  save_all: True
+  save_all: false
   max_pairs: 1
   every_lidar: 1
 

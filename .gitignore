@@ -5,6 +5,16 @@ catkin_ws/
 data/
 one_bag/
 bags/
+# Jetson Controller folder-contract runtime state.  These directories stay in
+# the source folder, but must never be copied into an immutable release snapshot.
+/.venv/
+/logs/
+/results/
+# Local credentials and machine-specific overrides.
+.env
+.env.*
+**/*.local.yaml
+**/*.local.yml
 # Exclude non-source artifacts
 /exe.txt
 /imgui.ini

@@ -8,6 +8,8 @@ segmentation 결과를 지도 좌표의 방호울타리 선형으로 만드는 �
 명령은 저장소의 `code/`에서 실행합니다. 기본 데이터 경로는 `../data`, 기본
 소형 모델은 `../model/n_model/best.pt`입니다. 기존 2026-06-26 현장값은
 `configs/profiles/local_2026_06_26/`에 상대경로로 보존되어 있습니다.
+상위 multi-fusion 저장소는 모델 파일을 Git에서 제외하므로 YOLO 실행 전 해당
+경로에 실제 가중치가 있는지 확인합니다.
 
 ## 처리 파이프라인
 
@@ -22,7 +24,7 @@ YOLO segmentation
   마스크·박스 plot 저장
         ↓
 관측점 생성
-  마스크 원본 Depth 중앙값이 8 m 이내인 fragment → representative 1점
+  confidence-qualified 마스크 Depth 중앙값이 8 m 이내인 fragment → representative 1점
   마스크 상·중·하 3점 → 형상 확인용 feature
         ↓
 세계좌표 변환
@@ -323,7 +325,7 @@ YOLO 실행이 끝나면 선형화가 자동 실행됩니다. YOLO 결과만 만
 
 1. segmentation polygon을 원본 RGB 크기의 binary mask로 복원합니다.
 2. 마스크 경계를 erosion해 배경 Depth 혼입을 줄입니다.
-3. Depth 0과 confidence 기준 초과 픽셀을 제거한 원본 분포의 중앙값을 구합니다.
+3. Depth 0과 confidence 기준 초과 픽셀을 제거한 분포의 중앙값을 구합니다.
 4. 이 중앙값이 `max_depth_mm`를 넘으면 representative와 feature를 모두
    `beyond_max_depth`로 제외합니다.
 5. 거리 이내 검출에서만 최대거리 초과 픽셀과 median/MAD 이상치를 제거합니다.
@@ -332,10 +334,10 @@ YOLO 실행이 끝나면 선형화가 자동 실행됩니다. YOLO 결과만 만
 8. 최종 지도 선형에는 `point_usage=mapping`인 representative만 사용합니다.
 
 `max_depth_mm`는 초과 깊이를 상한값으로 잘라 쓰는 설정이 아니라 검출 제외
-임계값입니다. 최대거리 필터를 적용하기 전의 마스크 중앙값으로 먼저 거리 이내인지
-판정하므로, 원거리 마스크에 섞인 소수의 8 m 직하 픽셀이 지도점으로 채택되지
-않습니다. 정확히 임계값인 Depth는 포함하고 이를 초과한 검출은 좌표를 만들지
-않습니다.
+임계값입니다. 최대거리 필터를 적용하기 전의 confidence-qualified 중앙값으로 먼저
+거리 이내인지 판정하므로, 원거리 마스크에 섞인 소수의 8 m 직하 픽셀이 지도점으로
+채택되지 않습니다. 정확히 임계값인 Depth는 포함하고 이를 초과한 검출은 좌표를
+만들지 않습니다.
 
 `points.csv`의 mapping 행에는 필터 전 거리 판정을 감사할 수 있도록
 `depth_measured_count`와 `depth_measured_median_mm`도 기록됩니다. 거절 행에도
@@ -503,7 +505,7 @@ geonova_depthai/runtime.py           DepthAI·GPS·NTRIP·EBIMU runtime
 geonova_depthai/debug_ui.py          데이터셋 확인과 좌표 변환
 geonova_depthai/yolo_seg_shp.py      YOLO·Depth fragment·WGS84 관측점
 geonova_depthai/fence_linearization.py EPSG:5179 보정·spline·SHP·QA
-../model/n_model/best.pt            기본 guardrail segmentation 모델
+../model/n_model/best.pt            로컬 기본 guardrail 모델 배치 위치
 tools/configure_ebimu.py            EBIMU 출력 설정·보정 도구
 tests/                               센서/캘리브레이션/회귀 검증
 ```

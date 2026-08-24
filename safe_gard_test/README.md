@@ -6,8 +6,8 @@ OAK RGB-D, GPS/RTK, 내장·외부 IMU를 동기 수집하고 YOLO segmentation 
 
 ```text
 code/                         수집·동기화·캘리브레이션·매핑 애플리케이션
-model/                        학습·라벨 변환 코드와 배포 가능한 소형 모델
-  n_model/best.pt             Git에 포함된 guardrail YOLO26n-seg 모델
+model/                        학습·라벨 변환 코드와 로컬 모델 배치 위치
+  n_model/best.pt             로컬에서 준비할 guardrail YOLO26n-seg 모델
   x_model/                    대형 현장 모델을 로컬에 두는 위치
 data/                         원시/동기 데이터셋(README 외에는 Git 제외)
 install.sh, install.ps1       code/.venv 설치 진입점
@@ -30,6 +30,10 @@ Windows PowerShell에서는 다음을 실행합니다.
 
 설치기는 Python 3.11 가상환경을 `code/.venv`에 만들고 CUDA Toolkit을 감지해
 PyTorch 빌드를 선택합니다.
+
+상위 `geo_multifusion_sensors` 저장소는 가중치 중복을 피하려고
+`model/n_model/best.pt`도 Git에서 제외합니다. YOLO 실행 전 현재 mapper 저장소의
+소형 모델이나 별도 배포 가중치를 이 경로에 복사해야 합니다.
 
 ## 수집과 매핑
 
