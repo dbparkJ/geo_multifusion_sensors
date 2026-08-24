@@ -1,1 +1,17 @@
 *.bag
+dependencies/
+*.pdf
+catkin_ws/
+data/
+one_bag/
+bags/
+# Exclude non-source artifacts
+/exe.txt
+/imgui.ini
+/preprocessed/
+/test/extracted/
+/test/pcd_output/
+/RoadInventory-MMS/
+/mms_3d_twin_ai_agent_starter/
+safe_gard_test/synced_image_recorder.zip
+safe_gard_test/model/n_model/best.pt

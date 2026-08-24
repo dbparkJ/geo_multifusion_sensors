@@ -1,0 +1,26 @@
+# python -m geonova_depthai.fence_linearization 기본 설정
+# 경로는 code/ 디렉터리에서 실행하는 기준입니다.
+points: ../data/2026-08-19_10-16-33_raw/output/points.csv
+trajectory: ../data/2026-08-19_10-16-33_raw/timestamps.csv
+output_dir: ../data/2026-08-19_10-16-33_raw/output/linearized
+
+# 관측점 유효성
+depth_sample_min: 20
+max_observation_depth_mm: 8000
+
+# GPS 궤적 기준 측방 offset 보정
+side_vote_window: 20
+side_window_m: 20.0
+side_frame_window: 100
+huber_delta_m: 0.75
+max_correction_m: 3.0
+
+# 점 연결과 segment 분리
+max_gap_m: 15.0
+max_frame_gap: 60
+max_heading_deg: 35.0
+min_line_support: 5
+
+# 최종 smoothing spline
+line_sample_spacing_m: 0.5
+spline_smoothing: 0.15
