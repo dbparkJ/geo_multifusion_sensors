@@ -1,6 +1,8 @@
 *.bag
 dependencies/
 *.pdf
+__pycache__/
+*.py[cod]
 catkin_ws/
 data/
 one_bag/

@@ -26,6 +26,10 @@ chmod +x install.sh
 ./install.sh --dev
 ```
 
+Jetson에서는 장치의 L4T/JetPack 버전과 Xavier/Orin GPU를 자동 감지해 NVIDIA CUDA
+PyTorch wheel과 호환 torchvision을 설치합니다. 별도 옵션 없이 설치 경로는 루트의
+`.venv`이며, 원하면 `--venv`로 경로를 직접 지정할 수 있습니다.
+
 등록 시 Controller는 `main.py --config <release>/config.yaml`을 실행합니다.
 `JETSON_PIPELINE_RESULTS_DIR`가 있으면 `main.py`가 YAML이나 기존 인자보다 뒤에
 `--output-dir`을 추가해 승인된 쓰기 경로를 강제합니다. 이때 센서 bridge는

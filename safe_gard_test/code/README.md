@@ -41,12 +41,13 @@ CSV + Point/Polyline SHP + QA
 
 ## 설치
 
-Python 3.11을 권장합니다. 설치기는 `uv`를 준비하고 `nvcc --version` 결과에
-따라 PyTorch 2.7.1의 CPU/CUDA 빌드를 자동 선택합니다.
+일반 PC에서는 Python 3.11을 권장합니다. 설치기는 `uv`를 준비하고 `nvcc --version`
+결과에 따라 PyTorch CPU/CUDA 빌드를 자동 선택합니다. Jetson에서는 L4T/JetPack을
+감지해 해당 NVIDIA aarch64 wheel과 시스템 Python ABI를 자동 선택합니다.
 
 저장소 루트에서는 Linux/macOS의 `./install.sh`, Windows PowerShell의
 `.\install.ps1` 한 명령으로 아래 설치기를 실행할 수 있습니다. 부트스트랩에는
-Python 3.8 이상만 있으면 되고, 프로젝트용 Python 3.11은 `uv`가 준비합니다.
+Python 3.8 이상만 있으면 되고, 일반 PC의 프로젝트용 Python 3.11은 `uv`가 준비합니다.
 
 ### Windows PowerShell
 
@@ -62,6 +63,10 @@ chmod +x scripts/setup_env.sh
 ./scripts/setup_env.sh --config configs/setup.yaml
 . .venv/bin/activate
 ```
+
+Jetson에서는 별도 옵션이 필요하지 않습니다. `/etc/nv_tegra_release`와 보드 모델을
+읽어 JetPack 5.1.x 또는 6.x에 맞는 Python, NVIDIA CUDA PyTorch wheel,
+torchvision 버전을 선택합니다. 기본 가상환경 경로는 현재 폴더의 `.venv`입니다.
 
 `configs/setup.yaml`에서 `dev: true`로 바꾸면 `pytest`도 설치합니다. 기존
 `.venv`를 그대로 쓰는데 테스트 패키지만 빠져 있다면 아래처럼 보충합니다.
