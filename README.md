@@ -1,89 +1,76 @@
-# Geo Multi-Fusion Sensors
+# Geo Multi-Fusion Sensors — Legacy Repository
 
-OAK RGB-D, GPS/RTK, 내·외부 IMU 수집과 방호울타리 YOLO segmentation/지도
-선형화, ROS1 bag의 LiDAR–카메라 추출·투영 도구를 한 저장소에서 관리합니다.
+> **신규 개발 중단:** 이 저장소의 기능은
+> [`geonLabs/geonova-depthai-mapper`](https://github.com/geonLabs/geonova-depthai-mapper)로
+> 통합되었습니다. 새로운 기능, 버그 수정, Jetson 배포는 기준 저장소에서만 진행합니다.
 
-## Jetson Controller 자동 실행 폴더
-
-저장소 루트는 JetsonControllerApp의 Python 작업 폴더 계약을 따릅니다.
+## 단일 기준 저장소
 
 ```text
-main.py                      관리형 수집 진입점
-config.yaml                  이식 가능한 수집 기본값
-.venv/                       install.sh가 만드는 실제 가상환경(Git 제외)
-results/                     수집 결과와 controller bridge 상태(Git 제외)
-safe_gard_test/code/         DepthAI 수집·동기화·매핑 구현
+Canonical: geonLabs/geonova-depthai-mapper
+Legacy:    dbparkJ/geo_multifusion_sensors
 ```
 
-Controller의 `--folder` 등록은 폴더 이름을 작업 ID로 사용하므로 폴더 이름에는
-소문자, 숫자, 점, 하이픈, 밑줄만 사용할 수 있습니다. 기본 GitHub 저장소 이름을
-그대로 clone해 등록할 수 있습니다.
+이 저장소는 과거 커밋과 기존 장비의 재현을 위한 이력 보관용입니다.
+`safe_gard_test/code`를 수정하거나 기준 저장소의 코드를 다시 복사하지 않습니다.
+
+## 이전된 기능
+
+| 기존 경로 | 기준 저장소 경로 |
+|---|---|
+| `safe_gard_test/code/` | `code/` |
+| `safe_gard_test/model/` | `model/` |
+| `test/convert_lidar_bag_to_pcd.py` | `tools/lidar/convert_lidar_bag_to_pcd.py` |
+| `test/config.yaml` | `tools/lidar/config.yaml` |
+| `test/requirements.txt` | `tools/lidar/requirements.txt` |
+| `scripts/project_lidar_overlay.py` | `tools/lidar/project_lidar_overlay.py` |
+
+기준 저장소에는 다음 운영 개선도 포함되어 있습니다.
+
+- 데이터셋을 생성하지 않는 `--monitor-only`
+- OAK 장애 시 GPS/IMU를 유지하는 카메라 재연결
+- `/dev/serial/by-id` 기반 GNSS/EBIMU 안전 자동 탐색
+- 이동 중 NTRIP 기준국 make-before-break 전환
+- 동일 초 재시작 시 기존 데이터셋 덮어쓰기 방지
+- LiDAR 변환 회귀 테스트와 GitHub Actions
+
+## 기존 장비 이전
+
+기존 폴더 위에 새 코드를 덮어쓰지 말고 기준 저장소를 별도로 clone합니다.
 
 ```bash
-git clone https://github.com/dbparkJ/geo_multifusion_sensors.git
-cd geo_multifusion_sensors
+cd ~
+git clone https://github.com/geonLabs/geonova-depthai-mapper.git
+cd geonova-depthai-mapper
 chmod +x install.sh
 ./install.sh --dev
 ```
 
-Jetson에서는 장치의 L4T/JetPack 버전과 Xavier/Orin GPU를 자동 감지해 NVIDIA CUDA
-PyTorch wheel과 호환 torchvision을 설치합니다. 별도 옵션 없이 설치 경로는 루트의
-`.venv`이며, 원하면 `--venv`로 경로를 직접 지정할 수 있습니다.
+Jetson Controller에는 새 저장소 폴더를 다시 등록해야 새 release snapshot이 적용됩니다.
+기존 수집 데이터, `.venv`, 대형 모델 가중치는 Git 저장소 사이에 복사하지 말고 외부
+데이터 경로 또는 배포 절차로 연결합니다.
 
-등록 시 Controller는 `main.py --config <release>/config.yaml`을 실행합니다.
-`JETSON_PIPELINE_RESULTS_DIR`가 있으면 `main.py`가 YAML이나 기존 인자보다 뒤에
-`--output-dir`을 추가해 승인된 쓰기 경로를 강제합니다. 이때 센서 bridge는
-`JETSON_PIPELINE_SENSOR_BRIDGE_DIR`가 있으면 그 경로를 사용하고, 없으면 관리
-결과 폴더 아래 `controller-bridge/`에 둡니다. 두 환경변수가 모두 없는 explicit
-preset 실행은 기존 CLI/YAML의 bridge 경로를 보존합니다. 루트 `config.yaml`의
-기본 경로에서는 `results/controller-bridge/`에 `status.json`과
-`camera-preview.jpg`를 기록합니다.
+LiDAR 도구는 기준 저장소에서 별도 환경을 사용합니다.
 
 ```bash
-sudo /opt/jetson-control/register-pipeline.py \
-  --folder "$PWD" \
-  --name "Geo Multi-Fusion Capture" \
-  --user "$(id -un)" \
-  --autostart
+cd geonova-depthai-mapper/tools/lidar
+python3 -m venv .venv
+. .venv/bin/activate
+python -m pip install -r requirements.txt
 ```
 
-직접 실행할 때도 같은 portable 설정을 사용할 수 있습니다.
+## 자격증명
 
-```bash
-.venv/bin/python main.py --config config.yaml
-```
+공유 `config.yaml`에는 NTRIP 계정이나 비밀번호를 기록하지 않습니다.
+`NTRIP_USERNAME`, `NTRIP_PASSWORD` 환경변수 또는 Jetson Controller의 보호 환경
+설정을 사용합니다.
 
-NTRIP 계정은 Git에 기록하지 않습니다. 자동 실행 환경에서는 Controller가 관리하는
-보호된 환경 설정으로 `NTRIP_USERNAME`, `NTRIP_PASSWORD`를 주입해야 합니다.
-GPS/EBIMU 직렬 포트와 OAK USB 장치에 접근할 수 있도록 pipeline 사용자의 장치
-그룹·udev 규칙도 장비에서 확인해야 합니다.
+과거 커밋에 들어간 인증정보는 파일 삭제만으로 보호되지 않습니다. 기존 자격증명을
+폐기하고 새 값으로 발급한 뒤 기준 저장소의 보호 환경에 다시 등록해야 합니다.
 
-수집 프로세스는 `SIGINT`와 `SIGTERM`을 받으면 pending 이미지 기록을 마치고 CSV와
-metadata를 닫습니다. Controller는 소스 snapshot을 실행하므로 코드를 바꾼 뒤에는
-pipeline을 다시 등록해야 새 release가 적용됩니다.
+## 유지 정책
 
-## DepthAI 파이프라인
-
-세부 설치, 장치 검증, 수집, 동기화, YOLO/SHP 절차는
-[`safe_gard_test/README.md`](safe_gard_test/README.md)와
-[`safe_gard_test/code/README.md`](safe_gard_test/code/README.md)를 참고하세요.
-YOLO 가중치는 이 통합 저장소에서 제외되므로 실행 전
-`safe_gard_test/model/n_model/best.pt` 또는 설정에 지정한 모델을 별도로
-준비해야 합니다.
-
-## LiDAR 도구
-
-- `test/convert_lidar_bag_to_pcd.py`: `test/config.yaml`에 따라 ROS1 bag의 LiDAR
-  PointCloud2와 가장 가까운 카메라 프레임을 PCD/이미지로 추출합니다.
-- `scripts/project_lidar_overlay.py`: ROS 환경에서 calibration JSON을 읽어 첫
-  LiDAR–카메라 쌍의 투영 overlay를 만듭니다.
-
-LiDAR bag 변환 도구의 별도 의존성은 `test/requirements.txt`에 있습니다.
-
-## 회귀 테스트
-
-하드웨어를 열지 않는 회귀 테스트는 다음처럼 실행합니다.
-
-```bash
-.venv/bin/python -m pytest -q
-```
+- 이 저장소에는 신규 기능을 추가하지 않습니다.
+- 긴급 이력 복구 외에는 PR을 만들지 않습니다.
+- 문서와 이슈는 기준 저장소로 연결합니다.
+- 향후 저장소 설정에서 Archive 처리가 가능해지면 읽기 전용으로 전환합니다.
